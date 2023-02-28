@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Leaflet Measure Tool Example</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+	<script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-measure/dist/leaflet-measure.css" />
+	<script src="https://unpkg.com/leaflet-measure/dist/leaflet-measure.js"></script>
+
+    <script src="./src/GIBSMetadata.js"></script>
+    <script src="./src/GIBSLayer.js"></script>
+
+	<style>
+		#map {
+			height: 500px;
+		}
+	</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+	// var map = L.map('map').setView([51.505, -0.09], 13);
+    var map = L.map('map').setView([12.8797, 121.7740], 6);
+
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+			'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+		id: 'mapbox/streets-v11',
+		tileSize: 512,
+		zoomOffset: -1
+	}).addTo(map);
+
+    var layer = new L.GIBSLayer('MODIS_Aqua_SurfaceReflectance_Bands721', {
+        date: new Date('2015/04/01'),
+        transparent: true
+    }).addTo(map);
+
+	L.control.measure({
+		position: 'topleft',
+		primaryLengthUnit: 'meters',
+		secondaryLengthUnit: 'kilometers',
+		primaryAreaUnit: 'sqmeters',
+		secondaryAreaUnit: undefined
+	}).addTo(map);
+
+	var drawnItems = new L.FeatureGroup();
+	map.addLayer(drawnItems);
+
+	var drawControl = new L.Control.Draw({
+		draw: {
+			polygon: {
+				allowIntersection: false,
+				drawError: {
+					color: '#e1e100',
+					message: '<strong>Error:</strong> shape edges cannot cross!'
+				},
+				shapeOptions: {
+					color: '#3388ff'
+				}
+			},
+			polyline: {
+				metric: true,
+				showLength: true,
+				color: '#3388ff'
+			},
+			circle: false,
+			circlemarker: false,
+			rectangle: false,
+			marker: false
+		},
+		edit: {
+			featureGroup: drawnItems
+		}
+	});
+	map.addControl(drawControl);
+
+	map.on(L.Draw.Event.CREATED, function (e) {
+		var type = e.layerType,
+			layer = e.layer;
+
+		if (type === 'polygon') {
+			layer.on('click', function (e) {
+				alert('You clicked on the polygon!');
+			});
+		}
+
+		drawnItems.addLayer(layer);
+	});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Philippines Map</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+    <script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />  
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet-measure/dist/leaflet-measure.css" />
+	<script src="https://unpkg.com/leaflet-measure/dist/leaflet-measure.js"></script>
+
+    <script src='basic.ruler-src.js'></script>
+    <link rel="stylesheet" href="basic.ruler-src.css" />
+
+
+	<style>
+	    html, body, #map {
+	        width: 100%;
+	        height: 100%;
+	        padding: 0;
+	        margin: 0;
+	    }
+	</style>
+</head>
+<body>
+
+	<div id="map"></div>
+
+	<script>
+
+    // var map = L.map('map', {
+    //     center: [12.8797, 121.7740],
+    //     zoom: 6
+    // });
+
+    var map = L.map('map').setView([12.8797, 121.7740], 6);
+
+    L.tileLayer('http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}',
+    {attribution: 'Google Satellite'}).addTo(map);
+
+    var basemaps = {
+    StreetView: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',   {attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}),
+    ESRITopo: L.tileLayer.wms('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',   {layers: 'ESRI_Topo'}),
+    ESRISat: L.tileLayer.wms('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {layers: 'ESRI_Sat'})
+    };
+
+    L.control.layers(basemaps).addTo(map);
+
+    // create fullscreen control
+    var fsControl = L.control.fullscreen();
+    map.addControl(fsControl);
+
+
+    map.on('enterFullscreen', function(){
+        if(window.console) window.console.log('enterFullscreen');
+    });
+    map.on('exitFullscreen', function(){
+        if(window.console) window.console.log('exitFullscreen');
+    });
+
+	L.control.measure({
+		position: 'topleft',
+		primaryLengthUnit: 'meters',
+		secondaryLengthUnit: 'kilometers',
+		primaryAreaUnit: 'sqmeters',
+		secondaryAreaUnit: undefined
+	}).addTo(map);
+
+	var drawnItems = new L.FeatureGroup();
+	map.addLayer(drawnItems);
+
+	var drawControl = new L.Control.Draw({
+		draw: {
+			polygon: {
+				allowIntersection: false,
+				drawError: {
+					color: '#e1e100',
+					message: '<strong>Error:</strong> shape edges cannot cross!'
+				},
+				shapeOptions: {
+					color: '#3388ff'
+				}
+			},
+			polyline: {
+				metric: true,
+				showLength: true,
+				color: '#3388ff'
+			},
+			circle: false,
+			circlemarker: false,
+			rectangle: false,
+			marker: false
+		},
+		edit: {
+			featureGroup: drawnItems
+		}
+	});
+	map.addControl(drawControl);
+
+	map.on(L.Draw.Event.CREATED, function (e) {
+		var type = e.layerType,
+			layer = e.layer;
+
+		if (type === 'polygon') {
+			layer.on('click', function (e) {
+				alert('You clicked on the polygon!');
+			});
+		}
+
+		drawnItems.addLayer(layer);
+	});
+
+	</script>
+
+</body>
+</html>
