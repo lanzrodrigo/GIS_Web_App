@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>OpenLayers Map with Measure Tool</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.3.0/ol.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@v7.3.0/dist/ol.js"></script>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <script type="text/javascript">
+      var map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([121.0554, 14.5974]), // Center on the Philippines
+          zoom: 6 // Set initial zoom level
+        })
+      });
+
+      var measureSource = new ol.source.Vector();
+      var measureVector = new ol.layer.Vector({
+        source: measureSource,
+        style: new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          }),
+          stroke: new ol.style.Stroke({
+            color: '#ffcc33',
+            width: 2
+          }),
+          image: new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({
+              color: '#ffcc33'
+            })
+          })
+        })
+      });
+      map.addLayer(measureVector);
+
+      var measure = new ol.interaction.Draw({
+        source: measureSource,
+        type: 'LineString',
+        style: new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 255, 255, 0.2)'
+          }),
+          stroke: new ol.style.Stroke({
+            color: '#ffcc33',
+            width: 2
+          }),
+          image: new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({
+              color: '#ffcc33'
+            })
+          })
+        })
+      });
+      map.addInteraction(measure);
+
+      measure.on('drawend', function(event) {
+        var geometry = event.feature.getGeometry();
+        var length = ol.sphere.getLength(geometry);
+        var output = document.getElementById('output');
+        output.innerHTML = 'Length: ' + length.toFixed(2) + ' ' + 'meters';
+      });
+    </script>
+    <div id="output"></div>
+  </body>
+</html>
